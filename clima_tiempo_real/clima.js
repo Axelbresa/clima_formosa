@@ -1,24 +1,4 @@
-<!DOCTYPE html>
-<html lang="es">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Información Meteorológica</title>
-    <link rel="stylesheet" href="climaDias.css">
-</head>
-
-<body>
-    <div class="weather-container" id="currentWeatherContainer">
-        <!-- Los datos meteorológicos actuales se insertarán aquí dinámicamente -->
-    </div>
-
-    <div class="weather-container" id="hourlyForecastContainer">
-        <!-- Los datos del pronóstico por horas se insertarán aquí dinámicamente -->
-    </div>
-
-    <script>
-        const apiKey = '4a2a16afca706b0caca04c994f81284d';
+const apiKey = '4a2a16afca706b0caca04c994f81284d';
         let city_name = 'formosa';
 
         async function getWeatherData() {
@@ -58,8 +38,10 @@
             `;
         }
 
-        function displayCurrentWeather(weather) {
-            const currentWeatherContainer = document.getElementById('currentWeatherContainer');
+        function displayWeather(weather, hourlyData) {
+            const weatherContainer = document.getElementById('weatherContainer');
+            weatherContainer.innerHTML = '';
+
             const humidity = weather.main.humidity;
             const windSpeed = weather.wind.speed;
             const rain = weather.rain ? weather.rain['1h'] : 0;
@@ -68,12 +50,7 @@
             const imageUrl = `../images/${getImageFileName(description)}.png`;
 
             const currentWeatherInfo = createDayStructure(new Date(), imageUrl, description, temperature, humidity, windSpeed, rain);
-            currentWeatherContainer.innerHTML = currentWeatherInfo;
-        }
-
-        function displayHourlyForecast(hourlyData) {
-            const hourlyForecastContainer = document.getElementById('hourlyForecastContainer');
-            hourlyForecastContainer.innerHTML = '';
+            weatherContainer.innerHTML += currentWeatherInfo;
 
             hourlyData.forEach(hour => {
                 const date = new Date(hour.dt * 1000);
@@ -86,7 +63,7 @@
                 const imageUrl = `../images/${getImageFileName(description)}.png`;
 
                 const hourlyForecastInfo = createDayStructure(date, imageUrl, description, temperature, humidity, windSpeed, rain);
-                hourlyForecastContainer.innerHTML += hourlyForecastInfo;
+                weatherContainer.innerHTML += hourlyForecastInfo;
             });
         }
 
@@ -108,22 +85,12 @@
 
         window.addEventListener('load', () => {
             getWeatherData().then(weather => {
-                displayCurrentWeather(weather);
+                fetchHourlyForecast().then(hourlyData => {
+                    displayWeather(weather, hourlyData.list);
+                }).catch(error => {
+                    console.error('Error al obtener datos de pronóstico por horas:', error);
+                });
             }).catch(error => {
                 console.error('Error al obtener datos meteorológicos actuales:', error);
             });
-
-            fetchHourlyForecast().then(data => {
-                if (data.list && data.list.length > 0) {
-                    displayHourlyForecast(data.list);
-                } else {
-                    throw new Error('No se encontraron datos de pronóstico por horas');
-                }
-            }).catch(error => {
-                console.error('Error al obtener datos de pronóstico por horas:', error);
-            });
         });
-    </script>
-</body>
-
-</html>
