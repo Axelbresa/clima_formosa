@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Información Meteorológica</title>
+</head>
+<body>
+  <div class="weather-container">
+    <h1>Información Meteorológica</h1>
+    <div class="weather-item" id="humidity"></div>
+    <div class="weather-item" id="wind_speed"></div>
+    <div class="weather-item" id="rain"></div>
+    <div class="weather-item" id="temperature"></div>
+    <div class="weather-item" id="description"></div>
+    <div class="weather-item" id="formattedDateTime"></div>
+    <div class="weather-item" id="precipitation"></div> <!-- Nuevo div para mostrar la precipitación -->
+  </div>
+
+  <script>
+    const apiKey = '4a2a16afca706b0caca04c994f81284d';
+    let city_name = 'formosa';
+
+    async function getWeatherData() {
+      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city_name}&appid=${apiKey}&units=metric`);
+      const data = await response.json();
+      return data;
+    }
+
+    function displayWeather() {
+      getWeatherData().then((weather) => {
+        const humidityElement = document.getElementById('humidity');
+        const windSpeedElement = document.getElementById('wind_speed');
+        const rainElement = document.getElementById('rain');
+        const temperatureElement = document.getElementById('temperature');
+        const descriptionElement = document.getElementById('description');
+        const formattedDateTimeElement = document.getElementById('formattedDateTime');
+        const precipitationElement = document.getElementById('precipitation'); // Nuevo elemento para la precipitación
+
+        humidityElement.textContent = `Humedad: ${weather.main.humidity}%`;
+        windSpeedElement.textContent = `Velocidad del viento: ${weather.wind.speed} m/s`;
+        rainElement.textContent = `Lluvia (1h): ${weather.rain ? weather.rain['1h'] : 0} mm`;
+        temperatureElement.textContent = `Temperatura: ${weather.main.temp}°C`;
+        descriptionElement.textContent = `Descripción: ${weather.weather[0].description}`;
+        
+        const now = new Date();
+        const formattedDate = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+        const formattedTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        formattedDateTimeElement.textContent = `Fecha y hora: ${formattedDate} ${formattedTime}`;
+
+        // Mostrar la precipitación
+        precipitationElement.textContent = `Precipitación: ${weather.rain ? weather.rain['1h'] : 0} mm`;
+      }).catch((error) => {
+        console.error('Error al obtener datos meteorológicos:', error);
+      });
+    }
+
+    displayWeather();
+  </script>
+</body>
+</html>
